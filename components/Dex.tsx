@@ -1,11 +1,10 @@
-import { findGatewayToken } from "@identity.com/solana-gateway-ts";
-import { Provider, utils } from "@project-serum/anchor";
-import { makeSaberProvider, newProgram } from "@saberhq/anchor-contrib";
 import {
-  useAnchorWallet,
-  useConnection,
-  useWallet,
-} from "@solana/wallet-adapter-react";
+  findGatewayToken,
+  GatewayToken,
+} from "@identity.com/solana-gateway-ts";
+import { BN, Provider, utils } from "@project-serum/anchor";
+import { makeSaberProvider, newProgram } from "@saberhq/anchor-contrib";
+import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { PublicKey } from "@solana/web3.js";
 import {
@@ -19,14 +18,15 @@ import {
   Layout,
   Row,
 } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { IDL } from "./credix";
-import { CredixProgram } from "./idl.types";
+import { CredixProgram, GlobalMarketState } from "./idl.types";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   Token,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -48,13 +48,13 @@ const testOrders = [
     type: OrderType.BUY,
   },
   {
-    size: 3000,
-    price: 34234,
+    size: 2603,
+    price: 34233,
     type: OrderType.BUY,
   },
   {
-    size: 12232,
-    price: 4343434,
+    size: 232,
+    price: 50334,
     type: OrderType.SELL,
   },
 ];
@@ -63,16 +63,21 @@ export const Dex = () => {
   const [limitPrice, setLimitPrice] = useState<number>();
   const [amount, setAmount] = useState<number>();
   const [buyTabActive, setBuyTabActive] = useState<boolean>(true);
-  const { Header, Footer, Content } = Layout;
+  const { Header, Content } = Layout;
   const [orders, setOrders] = useState(testOrders);
   const [usdcBalance, setUSDCBalance] = useState<string>();
-  const [hasCivicPass, setHasCivicPass] = useState(false);
+  const [civicPass, setCivicPass] = useState<GatewayToken>();
+  const [depositAmount, setDepositAmount] = useState<number>();
 
   const connection = useConnection();
-  const wallet = useWallet();
   const anchorWallet = useAnchorWallet();
 
-  const getUSDCBalance = useCallback(async () => {
+  const programId = useMemo(
+    () => new PublicKey("v1yuc1NDc1N1YBWGFdbGjEDBXepcbDeHY1NphTCgkAP"),
+    []
+  );
+
+  const getProgram = useCallback(() => {
     if (anchorWallet) {
       const provider = new Provider(
         connection.connection,
@@ -80,12 +85,35 @@ export const Dex = () => {
         Provider.defaultOptions()
       );
       const saberProvider = makeSaberProvider(provider);
-      const programId = new PublicKey(
-        "v1yuc1NDc1N1YBWGFdbGjEDBXepcbDeHY1NphTCgkAP"
-      );
-      const program = newProgram<CredixProgram>(IDL, programId, saberProvider);
-      const seed = Buffer.from(utils.bytes.utf8.encode("credix-marketplace"));
-      const marketPDA = await PublicKey.findProgramAddress([seed], programId);
+      return newProgram<CredixProgram>(IDL, programId, saberProvider);
+    }
+  }, [anchorWallet, programId, connection.connection]);
+
+  const getMarketPDA = useCallback(() => {
+    const program = getProgram();
+
+    if (!program) {
+      return;
+    }
+
+    const seed = Buffer.from(utils.bytes.utf8.encode("credix-marketplace"));
+    return PublicKey.findProgramAddress([seed], programId);
+  }, [getProgram, programId]);
+
+  const getUSDCBalance = useCallback(async () => {
+    if (anchorWallet) {
+      const program = getProgram();
+
+      if (!program) {
+        return;
+      }
+
+      const marketPDA = await getMarketPDA();
+
+      if (!marketPDA) {
+        return;
+      }
+
       const market = await program.account.globalMarketState.fetchNullable(
         marketPDA[0]
       );
@@ -112,14 +140,48 @@ export const Dex = () => {
           gatekeeperNetwork
         );
 
-        setHasCivicPass(!!gatewayToken);
+        setCivicPass(gatewayToken || undefined);
       }
     }
-  }, [anchorWallet, connection.connection]);
+  }, [anchorWallet, connection.connection, getProgram, getMarketPDA]);
 
   useEffect(() => {
     getUSDCBalance();
   }, [getUSDCBalance]);
+
+  const deposit = async () => {
+    const program = getProgram();
+    const marketPDA = await getMarketPDA();
+
+    if (!marketPDA) {
+      return;
+    }
+
+    if (!program) {
+      return;
+    }
+
+    if (!depositAmount) {
+      return;
+    }
+
+    if (anchorWallet) {
+      return;
+    }
+
+    if (!civicPass) {
+      return;
+    }
+
+    const d = new BN(depositAmount);
+    /*     program.rpc.depositFunds(d, {
+      accounts: {
+        investor: anchorWallet.publicKey,
+        gatewayToken: civicPass.publicKey,
+        globalMarketState: marketPDA[0],
+      },
+    }); */
+  };
 
   return (
     <Layout
@@ -211,7 +273,7 @@ export const Dex = () => {
                   <Row>
                     <Col span={12}>
                       <Button size="large" type="primary" block>
-                        Get Credix pass
+                        Get Civic pass
                       </Button>
                     </Col>
                     <Col span={12}>
@@ -267,10 +329,14 @@ export const Dex = () => {
               <div style={{ padding: "25px", paddingTop: 0 }}>
                 <Row gutter={25}>
                   <Col span={12}>
-                    <InputNumber size="large" style={{ width: "100%" }} />
+                    <InputNumber
+                      size="large"
+                      style={{ width: "100%" }}
+                      onChange={(v) => setDepositAmount(Number(v))}
+                    />
                   </Col>
                   <Col span={12}>
-                    <Button size="large" type="primary" block>
+                    <Button size="large" type="primary" block onClick={deposit}>
                       Deposit USDC
                     </Button>
                   </Col>
@@ -429,6 +495,7 @@ export const Dex = () => {
                 </Row>
                 {orders
                   .filter((o) => o.type === OrderType.SELL)
+                  .sort((a, b) => (a.price > b.price ? -1 : 1))
                   .map((o, i) => (
                     <div key={i}>
                       <Divider style={{ margin: "12.5px" }} />
@@ -441,7 +508,7 @@ export const Dex = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <div>{o.size}</div>
+                            <div style={{ color: "red" }}>{o.size}</div>
                           </div>
                         </Col>
                         <Col span={12}>
@@ -452,7 +519,7 @@ export const Dex = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <div>{o.price}</div>
+                            <div style={{ color: "red" }}>{o.price}</div>
                           </div>
                         </Col>
                       </Row>
@@ -494,6 +561,7 @@ export const Dex = () => {
                 </Row>
                 {orders
                   .filter((o) => o.type === OrderType.BUY)
+                  .sort((a, b) => (a.price < b.price ? -1 : 1))
                   .map((o, i) => (
                     <div key={i}>
                       <Divider style={{ margin: "12.5px" }} />
@@ -506,7 +574,7 @@ export const Dex = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <div>{o.size}</div>
+                            <div style={{ color: "green" }}>{o.size}</div>
                           </div>
                         </Col>
                         <Col span={12}>
@@ -517,7 +585,7 @@ export const Dex = () => {
                               justifyContent: "center",
                             }}
                           >
-                            <div>{o.price}</div>
+                            <div style={{ color: "green" }}>{o.price}</div>
                           </div>
                         </Col>
                       </Row>
