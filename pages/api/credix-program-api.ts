@@ -10,9 +10,7 @@ import {
   issueVanilla,
   findGatewayToken,
 } from "@identity.com/solana-gateway-ts";
-import * as fs from "fs";
 import { newCredixProgram } from "./programs";
-import { Provider, Wallet } from "@project-serum/anchor";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 
 const credixProgramID = new PublicKey(
@@ -55,6 +53,7 @@ export const createCredixPass = async (
 ) => {
   const [globalMarketStatePda, _globalMarketStateBump] =
     await getGlobalMarketPda();
+  console.log(globalMarketStatePda.toString());
 
   const [credixPass, bump] = await getCredixPassPda(
     globalMarketStatePda,
@@ -62,18 +61,21 @@ export const createCredixPass = async (
   );
 
   const program = newCredixProgram(connection, wallet);
-
-  await program.rpc.createCredixPass(bump, {
-    accounts: {
-      owner: wallet.publicKey,
-      passHolder: wallet.publicKey,
-      globalMarketState: globalMarketStatePda,
-      credixPass: credixPass,
-      systemProgram: anchor.web3.SystemProgram.programId,
-      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-    },
-    signers: [],
-  });
+  try {
+    await program.rpc.createCredixPass(bump, {
+      accounts: {
+        owner: wallet.publicKey,
+        passHolder: wallet.publicKey,
+        globalMarketState: globalMarketStatePda,
+        credixPass: credixPass,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      },
+      signers: [],
+    });
+  } catch (e) {
+    alert(e);
+  }
 };
 
 export const updateCredixPass = async (
@@ -111,7 +113,7 @@ export const getGlobalMarketStateAccountData = async (
   return program.account.globalMarketState.fetchNullable(globalMarketState);
 };
 
-const getBaseMintPK = async (
+export const getBaseMintPK = async (
   connection: Connection,
   wallet: AnchorWallet,
   globalMarketState: PublicKey
@@ -129,7 +131,7 @@ const getBaseMintPK = async (
   return globalMarketStateData.liquidityPoolTokenMintAccount;
 };
 
-const getLPTokenMintPK = async (
+export const getLPTokenMintPK = async (
   connection: Connection,
   wallet: AnchorWallet,
   globalMarketState: PublicKey
@@ -189,7 +191,7 @@ export const getGatekeeperNetwork = async (
   return globalMarketStateData.gatekeeperNetwork;
 };
 
-const getAssociatedBaseTokenAddressPK = async (
+export const getAssociatedBaseTokenAddressPK = async (
   connection: Connection,
   wallet: AnchorWallet,
   publicKey: PublicKey,
@@ -225,7 +227,7 @@ const getLiquidityPoolAssociatedBaseTokenAddressPK = async (
   );
 };
 
-const getInvestorLPAssociatedTokenAddress = async (
+export const getInvestorLPAssociatedTokenAddress = async (
   connection: Connection,
   wallet: AnchorWallet,
   globalMarketState: PublicKey
@@ -270,6 +272,7 @@ export const depositInvestment = async (
     wallet,
     globalMarketStatePDA
   );
+
   const marketBaseTokenAccountPK =
     await getLiquidityPoolAssociatedBaseTokenAddressPK(
       connection,
@@ -299,24 +302,27 @@ export const depositInvestment = async (
     globalMarketStatePDA,
     wallet.publicKey
   );
-
-  await program.rpc.depositFunds(depositAmount, {
-    accounts: {
-      investor: wallet.publicKey,
-      gatewayToken: getGatewayTokenAccount.publicKey,
-      globalMarketState: globalMarketStatePDA,
-      signingAuthority: signingAuthorityPDA[0],
-      investorTokenAccount: userAssociatedBaseTokenAddressPK,
-      liquidityPoolTokenAccount: investorLPAssociatedTokenAddress,
-      lpTokenMintAccount: lpTokenMintPK,
-      investorLpTokenAccount: investorLPAssociatedTokenAddress,
-      baseMintAccount: baseMintPK,
-      credixPass: getCredixPassPDA[0],
-      associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-      tokenProgram: TOKEN_PROGRAM_ID,
-      systemProgram: anchor.web3.SystemProgram.programId,
-      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-    },
-    signers: [],
-  });
+  try {
+    await program.rpc.depositFunds(depositAmount, {
+      accounts: {
+        investor: wallet.publicKey,
+        gatewayToken: getGatewayTokenAccount.publicKey,
+        globalMarketState: globalMarketStatePDA,
+        signingAuthority: signingAuthorityPDA[0],
+        investorTokenAccount: userAssociatedBaseTokenAddressPK,
+        liquidityPoolTokenAccount: marketBaseTokenAccountPK,
+        lpTokenMintAccount: lpTokenMintPK,
+        investorLpTokenAccount: investorLPAssociatedTokenAddress,
+        baseMintAccount: baseMintPK,
+        credixPass: getCredixPassPDA[0],
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        systemProgram: anchor.web3.SystemProgram.programId,
+        rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      },
+      signers: [],
+    });
+  } catch (e) {
+    alert(e);
+  }
 };

@@ -28,14 +28,15 @@ import {
 import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 import { IDL } from "../pages/idl/credix";
 import { createCredixPass } from "../pages/api/credix-program-api";
-import { CredixComponent } from "./CredixComponenet";
+import { CredixComponent } from "./CredixComponent";
 import { CreateSerumOrder } from "./CreateSerumOrders";
 import { OrdersInfo } from "./OrdersInfo";
+import { NavbarComponent } from "./navbar";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 export const Dex = () => {
-  const { Header, Content } = Layout;
+  const { Content } = Layout;
 
   const connection = useConnection();
   const anchorWallet = useAnchorWallet();
@@ -118,73 +119,10 @@ export const Dex = () => {
         height: "100vh",
       }}
     >
-      <Header
-        style={{
-          height: "100px",
-          background: "white",
-          boxShadow: "0px 0px 10px 1px rgba(0,0,0,0.1)",
-          padding: "25px",
-        }}
-      >
-        <div
-          style={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "row",
-            justifyContent: "space-between",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-              }}
-            >
-              <Image
-                width={30}
-                src="https://app.credix.finance/static/media/credix_logo_zwart.5ad312ee.svg"
-                alt="credix-logo"
-              />
-            </div>
-            <h1 style={{ margin: 0, marginLeft: "25px" }}>Serum Hackathon</h1>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              height: "100%",
-              alignItems: "center",
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              gap: "25px",
-            }}
-          >
-            <Button
-              size="large"
-              type="primary"
-              onClick={() => {
-                window
-                  .open(
-                    "https://spl-token-faucet.com/?token-name=USDC",
-                    "_blank"
-                  )
-                  ?.focus();
-              }}
-            >
-              Get USDC
-            </Button>
-            <WalletMultiButton />
-          </div>
-        </div>
-      </Header>
+      <NavbarComponent
+        wallet={anchorWallet}
+        connection={connection.connection}
+      ></NavbarComponent>
 
       <Content style={{ padding: "50px" }}>
         <Row

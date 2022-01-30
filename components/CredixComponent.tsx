@@ -29,11 +29,14 @@ import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pub
 import { IDL } from "../pages/idl/credix";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection } from "@solana/web3.js";
-import { createCredixPass } from "../pages/api/credix-program-api";
+import {
+  createCredixPass,
+  depositInvestment,
+} from "../pages/api/credix-program-api";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
-interface CredixComponenetInterface {
+interface CredixComponentInterface {
   connection: Connection;
   wallet?: AnchorWallet;
 }
@@ -41,8 +44,7 @@ interface CredixComponenetInterface {
 export const CredixComponent = ({
   connection,
   wallet,
-}: CredixComponenetInterface) => {
-  const deposit = async () => {};
+}: CredixComponentInterface) => {
   const [depositAmount, setDepositAmount] = useState<number>();
 
   const getCredixPassOnclick = async () => {
@@ -51,6 +53,15 @@ export const CredixComponent = ({
       return;
     }
     createCredixPass(connection, wallet!);
+  };
+
+  const deposit = async () => {
+    if (wallet === undefined && depositAmount === undefined) {
+      alert("wallet not connected or deposit amount is undefined");
+      return;
+    }
+    depositInvestment(depositAmount!, connection, wallet!);
+    setDepositAmount(0);
   };
 
   return (
@@ -118,12 +129,8 @@ export const CredixComponent = ({
             borderTop: "2px solid rgb(240, 242, 245, 0.85)",
           }}
         >
-          <h1 style={{ margin: 0 }}>{
-            `Get`
-            // LP${
-            //   usdcBalance ? " - " + usdcBalance : ""
-            // }`
-          }</h1>
+          <h1 style={{ margin: 0 }}>{`Get
+            LP`}</h1>
         </div>
         <div style={{ padding: "25px", paddingTop: 0 }}>
           <Row gutter={25}>

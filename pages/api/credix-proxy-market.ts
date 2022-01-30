@@ -1,4 +1,3 @@
-import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 import {
   Connection,
   PublicKey,
@@ -7,20 +6,17 @@ import {
   TransactionInstruction,
 } from "@solana/web3.js";
 import {
-  OpenOrders,
   OpenOrdersPda,
   Logger,
   ReferralFees,
-  PermissionedCrank,
   MarketProxyBuilder,
-  DexInstructions,
 } from "@project-serum/serum";
 import * as anchor from "@project-serum/anchor";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { getTokenAccount } from "@project-serum/common";
+import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
 
 const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID: PublicKey = new PublicKey(
   "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
@@ -44,34 +40,32 @@ export async function loadCredixPermissionedMarket(
   globalMarketSeed: string,
   gatewayNetwork: PublicKey
 ) {
-  return (
-    new MarketProxyBuilder()
-      .middleware(
-        new OpenOrdersPda({
-          proxyProgramId: proxyProgramId,
-          dexProgramId: dexProgramId,
-        })
-      )
-      .middleware(new ReferralFees())
-      .middleware(
-        new CredixPermissionedMarket(
-          dexProgramId,
-          proxyProgramId,
-          lpMint,
-          credixProgram,
-          globalMarketSeed,
-          gatewayNetwork
-        )
-      )
-      .middleware(new Logger())
-      .load({
-        connection,
-        market,
+  return new MarketProxyBuilder()
+    .middleware(
+      new OpenOrdersPda({
+        proxyProgramId: proxyProgramId,
+        dexProgramId: dexProgramId,
+      })
+    )
+    .middleware(new ReferralFees())
+    .middleware(
+      new CredixPermissionedMarket(
         dexProgramId,
         proxyProgramId,
-        options: { commitment: "recent" },
-      })
-  );
+        lpMint,
+        credixProgram,
+        globalMarketSeed,
+        gatewayNetwork
+      )
+    )
+    .middleware(new Logger())
+    .load({
+      connection,
+      market,
+      dexProgramId,
+      proxyProgramId,
+      options: { commitment: "recent" },
+    });
 }
 
 export class CredixPermissionedMarket {

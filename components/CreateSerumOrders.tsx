@@ -1,13 +1,4 @@
 import {
-  findGatewayToken,
-  GatewayToken,
-} from "@identity.com/solana-gateway-ts";
-import { BN, Provider, utils } from "@project-serum/anchor";
-import { makeSaberProvider, newProgram } from "@saberhq/anchor-contrib";
-import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { PublicKey } from "@solana/web3.js";
-import {
   Button,
   Card,
   Checkbox,
@@ -30,6 +21,10 @@ import { IDL } from "../pages/idl/credix";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { Connection } from "@solana/web3.js";
 import { createCredixPass } from "../pages/api/credix-program-api";
+import {
+  initOrderAccount,
+  // newOrderv3,
+} from "../pages/api/credix-proxy-market-api";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -42,8 +37,6 @@ export const CreateSerumOrder = ({
   connection,
   wallet,
 }: ComponenetInterface) => {
-  const deposit = async () => {};
-  const [depositAmount, setDepositAmount] = useState<number>();
   const [limitPrice, setLimitPrice] = useState<number>();
   const [amount, setAmount] = useState<number>();
   const [buyTabActive, setBuyTabActive] = useState<boolean>(true);
@@ -54,6 +47,22 @@ export const CreateSerumOrder = ({
       return;
     }
     createCredixPass(connection, wallet!);
+  };
+
+  const initializeOpenOrder = async () => {
+    if (wallet == undefined) {
+      alert("wallet not connected");
+      return;
+    }
+    initOrderAccount(connection, wallet!);
+  };
+
+  const createOpenOrder = async () => {
+    if (wallet == undefined) {
+      alert("wallet not connected");
+      return;
+    }
+    // newOrderv3(connection, wallet!, buyTabActive ? "buy" : "sell", 1, 1);
   };
 
   return (
@@ -77,6 +86,15 @@ export const CreateSerumOrder = ({
               width: "100%",
             }}
           >
+            <Button
+              size="large"
+              type="primary"
+              block
+              onClick={initializeOpenOrder}
+            >
+              Initalize Open Orders PDA
+            </Button>
+
             <Row>
               <Col span={12}>
                 <div
