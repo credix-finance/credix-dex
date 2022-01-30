@@ -195,14 +195,6 @@ export type Credix = {
         {
           "name": "passBump",
           "type": "u8"
-        },
-        {
-          "name": "isUnderwriter",
-          "type": "bool"
-        },
-        {
-          "name": "isBorrower",
-          "type": "bool"
         }
       ]
     },
@@ -233,14 +225,6 @@ export type Credix = {
       "args": [
         {
           "name": "isActive",
-          "type": "bool"
-        },
-        {
-          "name": "isUnderwriter",
-          "type": "bool"
-        },
-        {
-          "name": "isBorrower",
           "type": "bool"
         }
       ]
@@ -417,14 +401,6 @@ export type Credix = {
             "type": "u8"
           },
           {
-            "name": "isBorrower",
-            "type": "bool"
-          },
-          {
-            "name": "isUnderwriter",
-            "type": "bool"
-          },
-          {
             "name": "active",
             "type": "bool"
           }
@@ -445,51 +421,46 @@ export type Credix = {
     },
     {
       "code": 6002,
-      "name": "CredixPassInvalid",
-      "msg": "Credix pass is invalid for this request."
-    },
-    {
-      "code": 6003,
       "name": "CredixPassInactive",
       "msg": "Credix pass is inactive at the moment."
     },
     {
-      "code": 6004,
+      "code": 6003,
       "name": "Overflow",
       "msg": "Overflow occured."
     },
     {
-      "code": 6005,
+      "code": 6004,
       "name": "Underflow",
       "msg": "Underflow occured."
     },
     {
-      "code": 6006,
+      "code": 6005,
       "name": "ZeroDivision",
       "msg": "Tried to divide by zero."
     },
     {
-      "code": 6007,
+      "code": 6006,
       "name": "ZeroDenominator",
       "msg": "Invalid Ratio: denominator can't be zero."
     },
     {
-      "code": 6008,
+      "code": 6007,
       "name": "InvalidPreciseNumber",
       "msg": "Invalid u64 used as value for PreciseNumber."
     },
     {
-      "code": 6009,
+      "code": 6008,
       "name": "PreciseNumberCastFailed",
       "msg": "Unable to cast PreciseNumber to u64"
     },
     {
-      "code": 6010,
+      "code": 6009,
       "name": "NotEnoughLPTokens",
       "msg": "Not enough LP tokens."
     },
     {
-      "code": 6011,
+      "code": 6010,
       "name": "NotEnoughBaseTokens",
       "msg": "Not enough Base tokens."
     }
@@ -693,14 +664,6 @@ export const IDL: Credix = {
         {
           "name": "passBump",
           "type": "u8"
-        },
-        {
-          "name": "isUnderwriter",
-          "type": "bool"
-        },
-        {
-          "name": "isBorrower",
-          "type": "bool"
         }
       ]
     },
@@ -731,14 +694,6 @@ export const IDL: Credix = {
       "args": [
         {
           "name": "isActive",
-          "type": "bool"
-        },
-        {
-          "name": "isUnderwriter",
-          "type": "bool"
-        },
-        {
-          "name": "isBorrower",
           "type": "bool"
         }
       ]
@@ -915,14 +870,6 @@ export const IDL: Credix = {
             "type": "u8"
           },
           {
-            "name": "isBorrower",
-            "type": "bool"
-          },
-          {
-            "name": "isUnderwriter",
-            "type": "bool"
-          },
-          {
             "name": "active",
             "type": "bool"
           }
@@ -943,51 +890,46 @@ export const IDL: Credix = {
     },
     {
       "code": 6002,
-      "name": "CredixPassInvalid",
-      "msg": "Credix pass is invalid for this request."
-    },
-    {
-      "code": 6003,
       "name": "CredixPassInactive",
       "msg": "Credix pass is inactive at the moment."
     },
     {
-      "code": 6004,
+      "code": 6003,
       "name": "Overflow",
       "msg": "Overflow occured."
     },
     {
-      "code": 6005,
+      "code": 6004,
       "name": "Underflow",
       "msg": "Underflow occured."
     },
     {
-      "code": 6006,
+      "code": 6005,
       "name": "ZeroDivision",
       "msg": "Tried to divide by zero."
     },
     {
-      "code": 6007,
+      "code": 6006,
       "name": "ZeroDenominator",
       "msg": "Invalid Ratio: denominator can't be zero."
     },
     {
-      "code": 6008,
+      "code": 6007,
       "name": "InvalidPreciseNumber",
       "msg": "Invalid u64 used as value for PreciseNumber."
     },
     {
-      "code": 6009,
+      "code": 6008,
       "name": "PreciseNumberCastFailed",
       "msg": "Unable to cast PreciseNumber to u64"
     },
     {
-      "code": 6010,
+      "code": 6009,
       "name": "NotEnoughLPTokens",
       "msg": "Not enough LP tokens."
     },
     {
-      "code": 6011,
+      "code": 6010,
       "name": "NotEnoughBaseTokens",
       "msg": "Not enough Base tokens."
     }
