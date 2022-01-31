@@ -1,6 +1,9 @@
 import {
   findGatewayToken,
   GatewayToken,
+  issueVanilla,
+  getGatewayTokenKeyForOwner,
+  getGatekeeperAccountKey,
 } from "@identity.com/solana-gateway-ts";
 import { BN, Provider, utils } from "@project-serum/anchor";
 import { Logger, OpenOrdersPda, ReferralFees } from "./middleware";
@@ -482,23 +485,6 @@ export const Dex = () => {
     message.success("Funds settled");
 
     console.log("TADAA");
-
-    /*     let { transaction, signers } =
-      await serumMarket.market.makePlaceOrderTransaction(
-        connection.connection,
-        {
-          owner: anchorWallet.publicKey,
-          payer: buyTabActive ? baseTokenAccount : lpTokenAccount,
-          side: buyTabActive ? "buy" : "sell",
-          price: limitPrice,
-          size: amount,
-          orderType: "limit",
-        }
-      ); */
-
-    /* transaction.partialSign(...(signers as Array<Signer>));
-    transaction = await anchorWallet.signTransaction(transaction);
-    connection.connection.sendRawTransaction(transaction.serialize()); */
   };
 
   useEffect(() => {
@@ -709,6 +695,105 @@ export const Dex = () => {
     loadOrders();
   }, [loadOrders]);
 
+  const issueCredixPass = async () => {
+    const marketPDA = await getMarketPDA();
+    const program = getProgram();
+
+    if (!marketPDA) {
+      console.log("no market pda");
+      return;
+    }
+
+    if (!program) {
+      console.log("no program");
+      return;
+    }
+
+    if (!anchorWallet) {
+      console.log("no wallet");
+      return;
+    }
+
+    const credixSeed = Buffer.from(utils.bytes.utf8.encode("credix-pass"));
+    const credixSeeds = [
+      marketPDA[0].toBuffer(),
+      anchorWallet.publicKey.toBuffer(),
+      credixSeed,
+    ];
+    const credixPDA = await PublicKey.findProgramAddress(
+      credixSeeds,
+      programId
+    );
+
+    try {
+      const txPromise = program.rpc.createCredixPass(credixPDA[1], {
+        accounts: {
+          owner: anchorWallet.publicKey,
+          passHolder: anchorWallet.publicKey,
+          globalMarketState: marketPDA[0],
+          credixPass: credixPDA[0],
+          systemProgram: SystemProgram.programId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        signers: [],
+      });
+      message.info("Creating Credix pass");
+      await txPromise;
+      message.success("Credix pass created");
+    } catch (e) {
+      alert(e);
+    }
+  };
+
+  const issueCivicPass = async () => {
+    if (!anchorWallet) {
+      return;
+    }
+
+    const program = getProgram();
+    if (!program) {
+      console.log("no program");
+      return;
+    }
+    const marketPDA = await getMarketPDA();
+
+    if (!marketPDA) {
+      console.log("no market pda");
+      return;
+    }
+    const market = await program.account.globalMarketState.fetchNullable(
+      marketPDA[0]
+    );
+
+    if (!market) {
+      return;
+    }
+    const issueVanillaInstruction = await issueVanilla(
+      await getGatewayTokenKeyForOwner(
+        anchorWallet.publicKey,
+        market.gatekeeperNetwork
+      ),
+      anchorWallet.publicKey,
+      await getGatekeeperAccountKey(
+        anchorWallet.publicKey,
+        market.gatekeeperNetwork
+      ),
+      anchorWallet.publicKey,
+      anchorWallet.publicKey,
+      market.gatekeeperNetwork
+    );
+
+    const tx = new Transaction();
+    tx.add(issueVanillaInstruction);
+
+    const txSigPromise = wallet.sendTransaction(tx, connection.connection);
+    message.info("Creating Civic pass");
+    const txSig = await txSigPromise;
+
+    await connection.connection.confirmTransaction(txSig);
+    message.success("Civic pass created");
+  };
+
   return (
     <Layout
       style={{
@@ -805,7 +890,12 @@ export const Dex = () => {
                 <div style={{ display: "flex", flexDirection: "column" }}>
                   <Row>
                     <Col span={12}>
-                      <Button size="large" type="primary" block>
+                      <Button
+                        size="large"
+                        type="primary"
+                        block
+                        onClick={issueCivicPass}
+                      >
                         Get Civic pass
                       </Button>
                     </Col>
@@ -835,7 +925,12 @@ export const Dex = () => {
                 >
                   <Row>
                     <Col span={12}>
-                      <Button size="large" type="primary" block>
+                      <Button
+                        size="large"
+                        type="primary"
+                        block
+                        onClick={issueCredixPass}
+                      >
                         Get Credix pass
                       </Button>
                     </Col>
@@ -847,7 +942,11 @@ export const Dex = () => {
                           height: "100%",
                         }}
                       >
-                        <Checkbox disabled checked={!!credixPass} style={{ marginLeft: "25px" }} />
+                        <Checkbox
+                          disabled
+                          checked={!!credixPass}
+                          style={{ marginLeft: "25px" }}
+                        />
                       </div>
                     </Col>
                   </Row>
