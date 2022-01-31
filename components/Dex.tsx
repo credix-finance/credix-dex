@@ -3,14 +3,8 @@ import {
   GatewayToken,
 } from "@identity.com/solana-gateway-ts";
 import { BN, Provider, utils } from "@project-serum/anchor";
-import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
-import {
-  Logger,
-  Market,
-  MarketProxyBuilder,
-  OpenOrdersPda,
-  ReferralFees,
-} from "@project-serum/serum";
+import { Logger, OpenOrdersPda, ReferralFees } from "./middleware";
+import { MarketProxyBuilder } from "./serum";
 import { makeSaberProvider, newProgram } from "@saberhq/anchor-contrib";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -39,6 +33,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IDL } from "./credix";
 import { CredixPass, CredixProgram } from "./idl.types";
+import { findProgramAddressSync } from "./middleware";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -459,7 +454,7 @@ export const Dex = () => {
     });
   };
 
-  /*   const loadSerumMarket = useCallback(async () => {
+  const loadSerumMarket = useCallback(async () => {
     const marketPDA = await getMarketPDA();
     const program = getProgram();
 
@@ -516,7 +511,7 @@ export const Dex = () => {
         proxyProgramId: permissionedMarketProgram,
         options: { commitment: "recent" },
       });
-  }, []); */
+  }, []);
 
   useEffect(() => {});
 
