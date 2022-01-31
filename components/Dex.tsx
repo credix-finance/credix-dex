@@ -35,6 +35,7 @@ import {
   Image,
   InputNumber,
   Layout,
+  message,
   Row,
 } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -467,6 +468,8 @@ export const Dex = () => {
 
     const txSig = await wallet.sendTransaction(tx, connection.connection);
     await connection.connection.confirmTransaction(txSig);
+
+    message.success("Order placed");
 
     console.log("TADAA");
 
