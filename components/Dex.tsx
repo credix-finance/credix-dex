@@ -578,8 +578,8 @@ export const Dex = () => {
       return;
     }
 
-    const d = new BN(depositAmount * 10**6);
-    program.rpc.depositFunds(d, {
+    const d = new BN(depositAmount * 10 ** 6);
+    const promise = program.rpc.depositFunds(d, {
       accounts: {
         investor: anchorWallet.publicKey,
         gatewayToken: civicPass.publicKey,
@@ -597,6 +597,10 @@ export const Dex = () => {
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
       },
     });
+
+    message.info("Depositing funds");
+    await promise;
+    message.success("Funds deposited");
   };
 
   const loadSerumMarket = useCallback(async () => {
@@ -813,7 +817,11 @@ export const Dex = () => {
                           height: "100%",
                         }}
                       >
-                        <Checkbox style={{ marginLeft: "25px" }} />
+                        <Checkbox
+                          disabled
+                          checked={!!civicPass}
+                          style={{ marginLeft: "25px" }}
+                        />
                       </div>
                     </Col>
                   </Row>
@@ -839,7 +847,7 @@ export const Dex = () => {
                           height: "100%",
                         }}
                       >
-                        <Checkbox style={{ marginLeft: "25px" }} />
+                        <Checkbox disabled checked={!!credixPass} style={{ marginLeft: "25px" }} />
                       </div>
                     </Col>
                   </Row>
