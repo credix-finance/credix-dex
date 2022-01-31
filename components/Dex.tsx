@@ -11,10 +11,16 @@ import {
   Token,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
+import {
+  useAnchorWallet,
+  useConnection,
+  useWallet,
+} from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import {
+  Account,
   PublicKey,
+  Signer,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
@@ -40,6 +46,12 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 enum OrderType {
   BUY,
   SELL,
+}
+
+interface Order {
+  size: number;
+  price: number;
+  type: OrderType;
 }
 
 // JUST FOR DEVELOPPING
@@ -210,7 +222,7 @@ export const Dex = () => {
   const [amount, setAmount] = useState<number>();
   const [buyTabActive, setBuyTabActive] = useState<boolean>(true);
   const { Header, Content } = Layout;
-  const [orders, setOrders] = useState();
+  const [orders, setOrders] = useState<Order[]>();
   const [usdcBalance, setUSDCBalance] = useState<string>();
   const [civicPass, setCivicPass] = useState<GatewayToken>();
   const [depositAmount, setDepositAmount] = useState<number>();
@@ -221,6 +233,7 @@ export const Dex = () => {
 
   const connection = useConnection();
   const anchorWallet = useAnchorWallet();
+  const wallet = useWallet();
 
   const programId = useMemo(
     () => new PublicKey("v1yuc1NDc1N1YBWGFdbGjEDBXepcbDeHY1NphTCgkAP"),
@@ -355,6 +368,82 @@ export const Dex = () => {
     getMarketPDA,
     programId,
   ]);
+
+  const createOrder = async () => {
+    console.log("order", buyTabActive, amount, limitPrice);
+
+    if (!amount) {
+      return;
+    }
+
+    if (!limitPrice) {
+      return;
+    }
+
+    if (!serumMarket) {
+      return;
+    }
+
+    if (!anchorWallet) {
+      return;
+    }
+
+    const program = getProgram();
+    if (!program) {
+      console.log("no program");
+      return;
+    }
+    const marketPDA = await getMarketPDA();
+
+    if (!marketPDA) {
+      console.log("no market pda");
+      return;
+    }
+    const market = await program.account.globalMarketState.fetchNullable(
+      marketPDA[0]
+    );
+
+    if (!market) {
+      console.log("no market");
+      return;
+    }
+
+    if (!market) {
+      return;
+    }
+
+    const baseMint = market.liquidityPoolTokenMintAccount;
+    const lpMint = market.lpTokenMintAccount;
+    const baseTokenAccount = await Token.getAssociatedTokenAddress(
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
+      baseMint,
+      anchorWallet.publicKey
+    );
+    const lpTokenAccount = await Token.getAssociatedTokenAddress(
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
+      lpMint,
+      anchorWallet.publicKey
+    );
+
+    let { transaction, signers } =
+      await serumMarket.market.makePlaceOrderTransaction(
+        connection.connection,
+        {
+          owner: anchorWallet.publicKey,
+          payer: buyTabActive ? baseTokenAccount : lpTokenAccount,
+          side: buyTabActive ? "buy" : "sell",
+          price: limitPrice,
+          size: amount,
+          orderType: "limit",
+        }
+      );
+
+    transaction.partialSign(...(signers as Array<Signer>));
+    transaction = await anchorWallet.signTransaction(transaction);
+    connection.connection.sendRawTransaction(transaction.serialize());
+  };
 
   useEffect(() => {
     getUSDCBalance();
@@ -830,7 +919,7 @@ export const Dex = () => {
                           size="large"
                           block
                           type="primary"
-                          onClick={() => console.log("place order")}
+                          onClick={createOrder}
                         >
                           Place order
                         </Button>
@@ -888,38 +977,39 @@ export const Dex = () => {
                     </div>
                   </Col>
                 </Row>
-                {orders
-                  .filter((o) => o.type === OrderType.SELL)
-                  .sort((a, b) => (a.price > b.price ? -1 : 1))
-                  .map((o, i) => (
-                    <div key={i}>
-                      <Divider style={{ margin: "12.5px" }} />
-                      <Row key={i}>
-                        <Col span={12}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignContent: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <div style={{ color: "red" }}>{o.size}</div>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignContent: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <div style={{ color: "red" }}>{o.price}</div>
-                          </div>
-                        </Col>
-                      </Row>
-                    </div>
-                  ))}
+                {orders &&
+                  orders
+                    .filter((o) => o.type === OrderType.SELL)
+                    .sort((a, b) => (a.price > b.price ? -1 : 1))
+                    .map((o, i) => (
+                      <div key={i}>
+                        <Divider style={{ margin: "12.5px" }} />
+                        <Row key={i}>
+                          <Col span={12}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignContent: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <div style={{ color: "red" }}>{o.size}</div>
+                            </div>
+                          </Col>
+                          <Col span={12}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignContent: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <div style={{ color: "red" }}>{o.price}</div>
+                            </div>
+                          </Col>
+                        </Row>
+                      </div>
+                    ))}
                 <Row style={{ marginTop: "25px" }} justify="space-around">
                   <Col span={8}>
                     <div
@@ -932,38 +1022,39 @@ export const Dex = () => {
                     </div>
                   </Col>
                 </Row>
-                {orders
-                  .filter((o) => o.type === OrderType.BUY)
-                  .sort((a, b) => (a.price < b.price ? -1 : 1))
-                  .map((o, i) => (
-                    <div key={i}>
-                      <Divider style={{ margin: "12.5px" }} />
-                      <Row key={i}>
-                        <Col span={12}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignContent: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <div style={{ color: "green" }}>{o.size}</div>
-                          </div>
-                        </Col>
-                        <Col span={12}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignContent: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <div style={{ color: "green" }}>{o.price}</div>
-                          </div>
-                        </Col>
-                      </Row>
-                    </div>
-                  ))}
+                {orders &&
+                  orders
+                    .filter((o) => o.type === OrderType.BUY)
+                    .sort((a, b) => (a.price < b.price ? -1 : 1))
+                    .map((o, i) => (
+                      <div key={i}>
+                        <Divider style={{ margin: "12.5px" }} />
+                        <Row key={i}>
+                          <Col span={12}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignContent: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <div style={{ color: "green" }}>{o.size}</div>
+                            </div>
+                          </Col>
+                          <Col span={12}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignContent: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <div style={{ color: "green" }}>{o.price}</div>
+                            </div>
+                          </Col>
+                        </Row>
+                      </div>
+                    ))}
               </div>
             </Card>
           </Col>
