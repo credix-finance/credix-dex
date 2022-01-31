@@ -439,7 +439,7 @@ export const Dex = () => {
     });
 
     const tx = new Transaction();
-    tx.add(tx);
+    tx.add(ix);
     tx.partialSign();
 
     const txSig = await wallet.sendTransaction(tx, connection.connection);
