@@ -210,7 +210,7 @@ export const Dex = () => {
   const [amount, setAmount] = useState<number>();
   const [buyTabActive, setBuyTabActive] = useState<boolean>(true);
   const { Header, Content } = Layout;
-  const [orders, setOrders] = useState(testOrders);
+  const [orders, setOrders] = useState();
   const [usdcBalance, setUSDCBalance] = useState<string>();
   const [civicPass, setCivicPass] = useState<GatewayToken>();
   const [depositAmount, setDepositAmount] = useState<number>();
