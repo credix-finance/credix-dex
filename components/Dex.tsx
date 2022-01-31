@@ -251,7 +251,7 @@ export const Dex = () => {
       return;
     }
 
-    const seed = Buffer.from(utils.bytes.utf8.encode("credix-marketplace"));
+    const seed = Buffer.from(utils.bytes.utf8.encode("credix-market"));
     return PublicKey.findProgramAddress([seed], programId);
   }, [getProgram, programId]);
 
@@ -267,24 +267,32 @@ export const Dex = () => {
   };
 
   const getUSDCBalance = useCallback(async () => {
+    console.log("getting balance");
     if (anchorWallet) {
+      console.log("asdfs");
       const program = getProgram();
 
       if (!program) {
+        console.log("no progrm");
         return;
       }
+      console.log("asdfs");
 
       const marketPDA = await getMarketPDA();
 
       if (!marketPDA) {
         return;
       }
+      console.log("asdfs");
 
       const market = await program.account.globalMarketState.fetchNullable(
         marketPDA[0]
       );
 
+      console.log("asdfs");
+
       if (market) {
+        console.log("market found");
         const baseMint = market.liquidityPoolTokenMintAccount;
         const baseTokenAddress = await Token.getAssociatedTokenAddress(
           ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -443,7 +451,7 @@ export const Dex = () => {
     });
   };
 
-  const loadSerumMarket = useCallback(async () => {
+  /*   const loadSerumMarket = useCallback(async () => {
     const marketPDA = await getMarketPDA();
     const program = getProgram();
 
@@ -488,7 +496,7 @@ export const Dex = () => {
           permissionedMarketProgram,
           lpMint,
           programId,
-          "credix-marketplace",
+          "credix-market",
           gm.gatekeeperNetwork
         )
       )
@@ -500,7 +508,7 @@ export const Dex = () => {
         proxyProgramId: permissionedMarketProgram,
         options: { commitment: "recent" },
       });
-  }, []);
+  }, []); */
 
   useEffect(() => {});
 
@@ -651,8 +659,8 @@ export const Dex = () => {
                 }}
               >
                 <h1 style={{ margin: 0 }}>{`Get LP${
-                  usdcBalance ? " - " + usdcBalance : ""
-                }`}</h1>
+                  usdcBalance ? " - " + `${usdcBalance} USDC` : ""
+                }${lpBalance ? " - " + `${lpBalance} LP` : ""}`}</h1>
               </div>
               <div style={{ padding: "25px", paddingTop: 0 }}>
                 <Row gutter={25}>
