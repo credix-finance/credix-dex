@@ -578,7 +578,7 @@ export const Dex = () => {
       return;
     }
 
-    const d = new BN(depositAmount);
+    const d = new BN(depositAmount * 10**6);
     program.rpc.depositFunds(d, {
       accounts: {
         investor: anchorWallet.publicKey,
