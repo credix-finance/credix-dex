@@ -218,6 +218,8 @@ const permissionedMarketProgram = new PublicKey(
 
 const DEX_PID = new PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
 
+const referral = new PublicKey("EoYuxcwTfyznBF2ebzZ8McqvveyxtMNTGAXGmNKycchB");
+
 export const Dex = () => {
   const [limitPrice, setLimitPrice] = useState<number>();
   const [amount, setAmount] = useState<number>();
@@ -445,11 +447,28 @@ export const Dex = () => {
       selfTradeBehavior: "decrementTake",
     });
 
+    const referralUsdc = await Token.getAssociatedTokenAddress(
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
+      baseMint,
+      referral
+    );
+
+    let ix2 = serumMarket.instruction.settleFunds(
+      openOrder,
+      anchorWallet.publicKey,
+      lpTokenAccount,
+      baseTokenAccount,
+      referralUsdc
+    );
+
     const tx = new Transaction();
     tx.add(ix);
+    tx.add(ix2);
 
     const txSig = await wallet.sendTransaction(tx, connection.connection);
     await connection.connection.confirmTransaction(txSig);
+
     console.log("TADAA");
 
     /*     let { transaction, signers } =
