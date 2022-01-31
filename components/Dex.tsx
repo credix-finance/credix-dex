@@ -466,18 +466,20 @@ export const Dex = () => {
     const tx = new Transaction();
     tx.add(ix);
 
-    const txSig = await wallet.sendTransaction(tx, connection.connection);
+    const txSigPromise = wallet.sendTransaction(tx, connection.connection);
+    message.info("Placing order");
+    const txSig = await txSigPromise;
     await connection.connection.confirmTransaction(txSig);
-
     message.success("Order placed");
-
     console.log("TADAA");
 
     const tx2 = new Transaction();
     tx2.add(ix2);
 
     const txSig2 = await wallet.sendTransaction(tx2, connection.connection);
+    message.info("settling funds");
     await connection.connection.confirmTransaction(txSig2);
+    message.success("Funds settled");
 
     console.log("TADAA");
 
