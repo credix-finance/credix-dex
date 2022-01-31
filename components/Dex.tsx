@@ -436,7 +436,7 @@ export const Dex = () => {
       serumMarket.proxyProgramId
     );
 
-    const ix = await serumMarket.instruction.newOrderV3({
+    const ix = serumMarket.instruction.newOrderV3({
       owner: anchorWallet.publicKey,
       payer: buyTabActive ? baseTokenAccount : lpTokenAccount,
       side: buyTabActive ? "buy" : "sell",
@@ -464,10 +464,17 @@ export const Dex = () => {
 
     const tx = new Transaction();
     tx.add(ix);
-    tx.add(ix2);
 
     const txSig = await wallet.sendTransaction(tx, connection.connection);
     await connection.connection.confirmTransaction(txSig);
+
+    console.log("TADAA");
+
+    const tx2 = new Transaction();
+    tx2.add(ix2);
+
+    const txSig2 = await wallet.sendTransaction(tx2, connection.connection);
+    await connection.connection.confirmTransaction(txSig2);
 
     console.log("TADAA");
 
