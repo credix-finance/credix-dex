@@ -427,12 +427,19 @@ export const Dex = () => {
       lpMint,
       anchorWallet.publicKey
     );
+    const openOrder = await OpenOrdersPda.openOrdersAddress(
+      marketAddress,
+      anchorWallet.publicKey,
+      DEX_PID,
+      serumMarket.proxyProgramId
+    );
 
     const ix = await serumMarket.instruction.newOrderV3({
       owner: anchorWallet.publicKey,
       payer: buyTabActive ? baseTokenAccount : lpTokenAccount,
       side: buyTabActive ? "buy" : "sell",
       price: limitPrice,
+      openOrdersAddressKey: openOrder,
       size: amount,
       orderType: "limit",
       selfTradeBehavior: "decrementTake",
@@ -440,7 +447,6 @@ export const Dex = () => {
 
     const tx = new Transaction();
     tx.add(ix);
-    tx.partialSign();
 
     const txSig = await wallet.sendTransaction(tx, connection.connection);
     await connection.connection.confirmTransaction(txSig);
