@@ -23,6 +23,7 @@ import {
   Signer,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
+  Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
 import {
@@ -427,7 +428,25 @@ export const Dex = () => {
       anchorWallet.publicKey
     );
 
-    let { transaction, signers } =
+    const ix = await serumMarket.instruction.newOrderV3({
+      owner: anchorWallet.publicKey,
+      payer: buyTabActive ? baseTokenAccount : lpTokenAccount,
+      side: buyTabActive ? "buy" : "sell",
+      price: limitPrice,
+      size: amount,
+      orderType: "limit",
+      selfTradeBehavior: "decrementTake",
+    });
+
+    const tx = new Transaction();
+    tx.add(tx);
+    tx.partialSign();
+
+    const txSig = await wallet.sendTransaction(tx, connection.connection);
+    await connection.connection.confirmTransaction(txSig);
+    console.log("TADAA");
+
+    /*     let { transaction, signers } =
       await serumMarket.market.makePlaceOrderTransaction(
         connection.connection,
         {
@@ -438,11 +457,11 @@ export const Dex = () => {
           size: amount,
           orderType: "limit",
         }
-      );
+      ); */
 
-    transaction.partialSign(...(signers as Array<Signer>));
+    /* transaction.partialSign(...(signers as Array<Signer>));
     transaction = await anchorWallet.signTransaction(transaction);
-    connection.connection.sendRawTransaction(transaction.serialize());
+    connection.connection.sendRawTransaction(transaction.serialize()); */
   };
 
   useEffect(() => {
