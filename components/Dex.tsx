@@ -7,6 +7,7 @@ import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pub
 import {
   Logger,
   Market,
+  MarketProxy,
   MarketProxyBuilder,
   OpenOrdersPda,
   ReferralFees,
@@ -200,29 +201,29 @@ class CredixPermissionedMarket {
   }
 }
 
+const marketAddress = new PublicKey(
+  "FcZntrVjDRPv8JnU2mHt8ejvvA1eiHqxM8d8JNEC8q9q"
+);
+
+const permissionedMarketProgram = new PublicKey(
+  "iPRL869bGrTiJZP6GW2ysPYXV9PMKSMAr6CYhRJx3zq"
+);
+
+const DEX_PID = new PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
+
 export const Dex = () => {
   const [limitPrice, setLimitPrice] = useState<number>();
   const [amount, setAmount] = useState<number>();
   const [buyTabActive, setBuyTabActive] = useState<boolean>(true);
   const { Header, Content } = Layout;
-  const [orders, setOrgitders] = useState(testOrders);
+  const [orders, setOrders] = useState(testOrders);
   const [usdcBalance, setUSDCBalance] = useState<string>();
   const [civicPass, setCivicPass] = useState<GatewayToken>();
   const [depositAmount, setDepositAmount] = useState<number>();
   const [credixPDA, setCredixPDA] = useState<PublicKey>();
   const [credixPass, setCredixPass] = useState<CredixPass>();
   const [lpBalance, setLPBalance] = useState<string>();
-  const [serumMarket, setSerumMarket] = useState();
-
-  const marketAddress = new PublicKey(
-    "FcZntrVjDRPv8JnU2mHt8ejvvA1eiHqxM8d8JNEC8q9q"
-  );
-
-  const permissionedMarketProgram = new PublicKey(
-    "iPRL869bGrTiJZP6GW2ysPYXV9PMKSMAr6CYhRJx3zq"
-  );
-
-  const DEX_PID = new PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
+  const [serumMarket, setSerumMarket] = useState<MarketProxy>();
 
   const connection = useConnection();
   const anchorWallet = useAnchorWallet();
@@ -459,7 +460,7 @@ export const Dex = () => {
     });
   };
 
-  /*   const loadSerumMarket = useCallback(async () => {
+  const loadSerumMarket = useCallback(async () => {
     const marketPDA = await getMarketPDA();
     const program = getProgram();
 
@@ -516,9 +517,54 @@ export const Dex = () => {
         proxyProgramId: permissionedMarketProgram,
         options: { commitment: "recent" },
       });
-  }, []); */
 
-  useEffect(() => {});
+    setSerumMarket(m);
+  }, [
+    anchorWallet,
+    connection.connection,
+    getMarketPDA,
+    getProgram,
+    programId,
+  ]);
+
+  useEffect(() => {
+    loadSerumMarket();
+  }, [loadSerumMarket]);
+
+  const loadOrders = useCallback(async () => {
+    if (!serumMarket) {
+      return;
+    }
+
+    const asks = await serumMarket.market.loadAsks(connection.connection);
+    const bids = await serumMarket.market.loadBids(connection.connection);
+
+    const orders = [];
+
+    // @ts-ignore
+    for (let order of asks) {
+      orders.push({
+        size: order.size,
+        price: order.price,
+        type: order.side === "buy" ? OrderType.BUY : OrderType.SELL,
+      });
+    }
+
+    // @ts-ignore
+    for (let order of bids) {
+      orders.push({
+        size: order.size,
+        price: order.price,
+        type: order.side === "buy" ? OrderType.BUY : OrderType.SELL,
+      });
+    }
+
+    setOrders(orders);
+  }, [connection.connection, serumMarket]);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
 
   return (
     <Layout
