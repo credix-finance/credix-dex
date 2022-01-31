@@ -3,20 +3,8 @@ import {
   GatewayToken,
 } from "@identity.com/solana-gateway-ts";
 import { BN, Provider, utils } from "@project-serum/anchor";
-<<<<<<< HEAD
-import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
-import {
-  Logger,
-  Market,
-  MarketProxy,
-  MarketProxyBuilder,
-  OpenOrdersPda,
-  ReferralFees,
-} from "@project-serum/serum";
-=======
 import { Logger, OpenOrdersPda, ReferralFees } from "./middleware";
-import { MarketProxyBuilder } from "./serum";
->>>>>>> 223863e2ac3de0a987972105ce48164b32d5aaee
+import { MarketProxy, MarketProxyBuilder } from "./serum";
 import { makeSaberProvider, newProgram } from "@saberhq/anchor-contrib";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -523,10 +511,6 @@ export const Dex = () => {
         proxyProgramId: permissionedMarketProgram,
         options: { commitment: "recent" },
       });
-<<<<<<< HEAD
-=======
-  }, []);
->>>>>>> 223863e2ac3de0a987972105ce48164b32d5aaee
 
     setSerumMarket(m);
   }, [
