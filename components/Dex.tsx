@@ -425,6 +425,14 @@ export const Dex = () => {
       anchorWallet.publicKey
     );
 
+    const liquidityPoolTokenAccount = await Token.getAssociatedTokenAddress(
+      ASSOCIATED_TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
+      baseMint,
+      signingAuthority[0],
+      true
+    );
+
     if (!credixPDA) {
       console.log("no credix pda");
       return;
@@ -438,7 +446,7 @@ export const Dex = () => {
         globalMarketState: marketPDA[0],
         signingAuthority: signingAuthority[0],
         investorTokenAccount: baseTokenAddress,
-        liquidityPoolTokenAccount: market.liquidityPoolTokenMintAccount,
+        liquidityPoolTokenAccount: liquidityPoolTokenAccount,
         lpTokenMintAccount: lpMint,
         investorLpTokenAccount: lpTokenAddress,
         baseMintAccount: baseMint,
