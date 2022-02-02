@@ -179,6 +179,7 @@ class CredixPermissionedMarket {
     ];
 
     let gateway_account = findProgramAddressSync(seeds, GATEWAY_PROGRAM);
+    console.log("proxy gateway", gateway_account[0]);
 
     let initiator_lpTokenAccount = findProgramAddressSync(
       [
@@ -366,7 +367,7 @@ export const Dex = () => {
         );
 
         setCivicPass(gatewayToken || undefined);
-        console.log("set civic");
+        console.log("set civic", gatewayToken?.publicKey);
 
         const credixSeed = Buffer.from(utils.bytes.utf8.encode("credix-pass"));
         const credixSeeds = [
@@ -437,13 +438,12 @@ export const Dex = () => {
       DEX_PID,
       serumMarket.proxyProgramId
     );
-    console.log("ASdfa");
     const openOrdersAccountInfo = await connection.connection.getAccountInfo(
       openOrder
     );
-    console.log("asdf");
 
     if (!openOrdersAccountInfo) {
+      console.log("creating open orders account info", openOrdersAccountInfo);
       const ix = serumMarket.instruction.initOpenOrders(
         wallet.publicKey,
         serumMarket.market.address,
@@ -553,7 +553,7 @@ export const Dex = () => {
     const tx = new Transaction();
     tx.add(ix);
 
-    console.log("sending")
+    console.log("sending");
     const txSigPromise = wallet.sendTransaction(tx, connection.connection);
     console.log("send order");
     message.info("Placing order");
