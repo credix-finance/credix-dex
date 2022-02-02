@@ -5,6 +5,7 @@ import {
   getGatewayTokenKeyForOwner,
   issueVanilla,
 } from "@identity.com/solana-gateway-ts";
+import { GatewayProvider } from "@civic/solana-gateway-react";
 import { BN, Provider, utils } from "@project-serum/anchor";
 import { makeSaberProvider, newProgram } from "@saberhq/anchor-contrib";
 import {
@@ -38,6 +39,7 @@ import {
   Row,
 } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { RPCEndpoint } from "../pages";
 import { IDL } from "./credix";
 import { CredixPass, CredixProgram } from "./idl.types";
 import {
@@ -47,6 +49,7 @@ import {
   ReferralFees,
 } from "./middleware";
 import { MarketProxy, MarketProxyBuilder } from "./serum";
+import { CivicStuff } from "./CivicStuff";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -226,6 +229,29 @@ const DEX_PID = new PublicKey("A3KCE92wXZMtGGJT6XYL2KHva58VXvWkhcqfJ6Q5JEia");
 
 const referral = new PublicKey("EoYuxcwTfyznBF2ebzZ8McqvveyxtMNTGAXGmNKycchB");
 
+interface IdentityProps {
+  gatekeeper: PublicKey | null;
+}
+
+export const IdentityButton = (props: IdentityProps) => {
+  const wallet = useAnchorWallet();
+
+  return (
+    <>
+      <GatewayProvider
+        wallet={wallet}
+        stage={"preprod"}
+        gatekeeperNetwork={props.gatekeeper || undefined}
+        clusterUrl={RPCEndpoint}
+      >
+        {props.gatekeeper && (
+          <CivicStuff gatekeeperNetwork={props.gatekeeper} />
+        )}
+      </GatewayProvider>
+    </>
+  );
+};
+
 export const Dex = () => {
   const [limitPrice, setLimitPrice] = useState<number>();
   const [amount, setAmount] = useState<number>();
@@ -239,6 +265,7 @@ export const Dex = () => {
   const [credixPass, setCredixPass] = useState<CredixPass>();
   const [lpBalance, setLPBalance] = useState<string>();
   const [serumMarket, setSerumMarket] = useState<MarketProxy>();
+  const [gatekeeperNetwork, setGatekeeperNetwork] = useState<PublicKey>();
 
   const connection = useConnection();
   const anchorWallet = useAnchorWallet();
@@ -326,6 +353,7 @@ export const Dex = () => {
         console.log("set usdc");
 
         const gatekeeperNetwork = market.gatekeeperNetwork;
+        setGatekeeperNetwork(gatekeeperNetwork);
         const gatewayToken = await findGatewayToken(
           connection.connection,
           anchorWallet.publicKey,
@@ -672,7 +700,11 @@ export const Dex = () => {
 
     console.log("sdfdsaf", marketPDA[0].toString());
     const mmm = await program.provider.connection.getAccountInfo(marketAddress);
-    console.log("Sfasfdads", mmm && mmm.owner.toString(), marketAddress.toString());
+    console.log(
+      "Sfasfdads",
+      mmm && mmm.owner.toString(),
+      marketAddress.toString()
+    );
     const gm = await program.account.globalMarketState.fetch(marketPDA[0]);
     const m = await new MarketProxyBuilder()
       .middleware(
@@ -907,6 +939,7 @@ export const Dex = () => {
               gap: "25px",
             }}
           >
+            <IdentityButton gatekeeper={gatekeeperNetwork || null} />
             <Button
               size="large"
               type="primary"

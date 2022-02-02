@@ -11,9 +11,11 @@ import { Dex } from "../components/Dex";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
+export const RPCEndpoint = "https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/";
+
 export const config = {
   clusterConfig: {
-    RPCEndpoint: "https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/",
+    RPCEndpoint: RPCEndpoint,
   },
   confirmOptions: {
     commitment: "finalized",
