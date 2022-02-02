@@ -394,70 +394,6 @@ export const Dex = () => {
     programId,
   ]);
 
-  const initMarket = useCallback(async () => {
-    if (!serumMarket) {
-      console.log("no serum market");
-      return;
-    }
-
-    if (!wallet.publicKey) {
-      return;
-    }
-
-    if (!credixPass || !civicPass) {
-      console.log("pass missing");
-      return;
-    }
-
-    if (!anchorWallet) {
-      return;
-    }
-
-    const openOrder = await OpenOrdersPda.openOrdersAddress(
-      marketAddress,
-      wallet.publicKey,
-      DEX_PID,
-      serumMarket.proxyProgramId
-    );
-    const openOrdersAccountInfo = await connection.connection.getAccountInfo(
-      openOrder
-    );
-
-    if (!openOrdersAccountInfo) {
-      console.log("creating open orders account info", openOrdersAccountInfo);
-      message.info("Creating open orders PDA");
-      const ix = serumMarket.instruction.initOpenOrders(
-        wallet.publicKey,
-        serumMarket.market.address,
-        serumMarket.market.address,
-        serumMarket.market.address
-      );
-      let tx = new Transaction();
-      tx.add(ix);
-      let { blockhash } = await connection.connection.getRecentBlockhash();
-      tx.recentBlockhash = blockhash;
-      tx.feePayer = wallet.publicKey;
-      tx = await anchorWallet.signTransaction(tx);
-      console.log("signatures, ", tx.signatures);
-      const sig = await connection.connection.sendRawTransaction(
-        tx.serialize()
-      );
-      await connection.connection.confirmTransaction(sig);
-      message.success("Open orders pda created");
-    }
-  }, [
-    serumMarket,
-    wallet,
-    connection.connection,
-    credixPass,
-    civicPass,
-    anchorWallet,
-  ]);
-
-  useEffect(() => {
-    initMarket();
-  }, [initMarket]);
-
   const createOrder = async () => {
     console.log("order", buyTabActive, amount, limitPrice);
 
@@ -589,6 +525,52 @@ export const Dex = () => {
   useEffect(() => {
     getUSDCBalance();
   }, [getUSDCBalance]);
+
+  const createOpenOrdersPDA = async () => {
+    if (!wallet.publicKey) {
+      return;
+    }
+
+    if (!serumMarket) {
+      return;
+    }
+
+    if (!anchorWallet) {
+      return;
+    }
+
+    const openOrder = await OpenOrdersPda.openOrdersAddress(
+      marketAddress,
+      wallet.publicKey,
+      DEX_PID,
+      serumMarket.proxyProgramId
+    );
+    const openOrdersAccountInfo = await connection.connection.getAccountInfo(
+      openOrder
+    );
+
+    if (!openOrdersAccountInfo) {
+      message.info("Creating open orders PDA");
+      const ix = serumMarket.instruction.initOpenOrders(
+        wallet.publicKey,
+        serumMarket.market.address,
+        serumMarket.market.address,
+        serumMarket.market.address
+      );
+      let tx = new Transaction();
+      tx.add(ix);
+      let { blockhash } = await connection.connection.getRecentBlockhash();
+      tx.recentBlockhash = blockhash;
+      tx.feePayer = wallet.publicKey;
+      tx = await anchorWallet.signTransaction(tx);
+      console.log("signatures, ", tx.signatures);
+      const sig = await connection.connection.sendRawTransaction(
+        tx.serialize()
+      );
+      await connection.connection.confirmTransaction(sig);
+      message.success("Open orders pda created");
+    }
+  };
 
   const deposit = async () => {
     const program = getProgram();
@@ -1086,6 +1068,28 @@ export const Dex = () => {
                   <Col span={12}>
                     <Button size="large" type="primary" block onClick={deposit}>
                       Deposit USDC
+                    </Button>
+                  </Col>
+                </Row>
+              </div>
+              <div
+                style={{
+                  padding: "25px",
+                  borderTop: "2px solid rgb(240, 242, 245, 0.85)",
+                }}
+              >
+                <h1 style={{ margin: 0 }}>Get open orders PDA</h1>
+              </div>
+              <div style={{ padding: "25px", paddingTop: 0 }}>
+                <Row gutter={25}>
+                  <Col span={24}>
+                    <Button
+                      size="large"
+                      type="primary"
+                      block
+                      onClick={createOpenOrdersPDA}
+                    >
+                      Create open orders PDA
                     </Button>
                   </Col>
                 </Row>
