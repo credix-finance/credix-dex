@@ -958,7 +958,7 @@ export const Dex = () => {
               gap: "25px",
             }}
           >
-            {/* <IdentityButton gatekeeper={gatekeeperNetwork || null} /> */}
+            <IdentityButton gatekeeper={gatekeeperNetwork || null} />
             <Button
               size="large"
               type="primary"
