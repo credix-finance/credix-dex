@@ -214,7 +214,6 @@ interface IdentityProps {
 export const IdentityButton = (props: IdentityProps) => {
   console.log("prop", props.gatekeeper?.toString());
   const wallet = useAnchorWallet();
-
   return (
     <>
       <GatewayProvider
