@@ -1052,22 +1052,24 @@ export const Dex = () => {
                   borderTop: "2px solid rgb(240, 242, 245, 0.85)",
                 }}
               >
-                <h1 style={{ margin: 0 }}>{`Get LP${
-                  usdcBalance ? " - " + `${usdcBalance} USDC` : ""
-                }${lpBalance ? " - " + `${lpBalance} LP` : ""}`}</h1>
+                <h1 style={{ margin: 0 }}>Get LP Tokens</h1>
+                <p style={{ margin: 0 }}> USDC balance: {usdcBalance? `${Math.round(usdcBalance)} USDC` : "0 USDC"}</p>
+                <p style={{ margin: 0 }}>LP balance: {lpBalance? `${Math.round(lpBalance)} LP` : "0 LP"}</p>
               </div>
               <div style={{ padding: "25px", paddingTop: 0 }}>
                 <Row gutter={25}>
-                  <Col span={12}>
+                  <Col span={18}>
                     <InputNumber
                       size="large"
+                      addonAfter="USDC"
                       style={{ width: "100%" }}
-                      onChange={(v) => setDepositAmount(Number(v))}
+                      onChange={(v) => setDepositAmount(Number(v))
+                      }
                     />
                   </Col>
-                  <Col span={12}>
+                  <Col span={6}>
                     <Button size="large" type="primary" block onClick={deposit}>
-                      Deposit USDC
+                      Get LP
                     </Button>
                   </Col>
                 </Row>
@@ -1078,7 +1080,7 @@ export const Dex = () => {
                   borderTop: "2px solid rgb(240, 242, 245, 0.85)",
                 }}
               >
-                <h1 style={{ margin: 0 }}>Get open orders PDA</h1>
+                <h1 style={{ margin: 0 }}>Create open orders PDA</h1>
               </div>
               <div style={{ padding: "25px", paddingTop: 0 }}>
                 <Row gutter={25}>
