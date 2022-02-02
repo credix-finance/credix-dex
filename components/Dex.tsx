@@ -275,7 +275,7 @@ export const Dex = () => {
     () => new PublicKey("D58Th9Y4tFssgZaCPQ6diJoiFC6TvcENsiYR6ZbRoosK"),
     []
   );
-
+  
   const getProgram = useCallback(() => {
     if (anchorWallet) {
       const provider = new Provider(
@@ -338,18 +338,22 @@ export const Dex = () => {
       if (market) {
         console.log("market found");
         const baseMint = market.liquidityPoolTokenMintAccount;
-        const baseTokenAddress = await Token.getAssociatedTokenAddress(
-          ASSOCIATED_TOKEN_PROGRAM_ID,
-          TOKEN_PROGRAM_ID,
-          baseMint,
-          anchorWallet.publicKey
-        );
-        const tokenAmount =
+        try {
+          const baseTokenAddress = await Token.getAssociatedTokenAddress(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            baseMint,
+            anchorWallet.publicKey
+          );
+          const tokenAmount =
           await program.provider.connection.getTokenAccountBalance(
             baseTokenAddress
           );
-
-        setUSDCBalance(tokenAmount.value.uiAmountString);
+          setUSDCBalance(tokenAmount.value.uiAmountString);
+        } catch (e) {
+          console.log(e);
+        }
+       
         console.log("set usdc");
 
         const gatekeeperNetwork = market.gatekeeperNetwork;
