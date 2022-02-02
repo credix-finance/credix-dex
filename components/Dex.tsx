@@ -218,11 +218,11 @@ class CredixPermissionedMarket {
 }
 
 const marketAddress = new PublicKey(
-  "Dosh9YzNfstN7jjdraf2RJCF25WZojUya79d2xzUJRp9"
+  "B5PiAeo5L2DVkYJPgoTVaLAC8HrVP8mZTfQsmWei4W2T"
 );
 
 const permissionedMarketProgram = new PublicKey(
-  "B82qssUC4qJT3DXohg8A1k6TuUBNcjnf5d4KX8uJmhDK"
+  "GA9WMuDAR2yzCg7mrBxd1QZAPVem23j6XxMnBVYYqeoX"
 );
 
 const DEX_PID = new PublicKey("A3KCE92wXZMtGGJT6XYL2KHva58VXvWkhcqfJ6Q5JEia");
@@ -234,6 +234,7 @@ interface IdentityProps {
 }
 
 export const IdentityButton = (props: IdentityProps) => {
+  console.log("prop", props.gatekeeper?.toString());
   const wallet = useAnchorWallet();
 
   return (
@@ -272,7 +273,7 @@ export const Dex = () => {
   const wallet = useWallet();
 
   const programId = useMemo(
-    () => new PublicKey("D58Th9Y4tFssgZaCPQ6diJoiFC6TvcENsiYR6ZbRoosK"),
+    () => new PublicKey("FboisrZaMdtHXY5rQmVbuZvnuYnooyfd6cxcmMyMNiQr"),
     []
   );
 
