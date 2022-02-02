@@ -1304,7 +1304,7 @@ export const Dex = () => {
                 {orders &&
                   orders
                     .filter((o) => o.type === OrderType.BUY)
-                    .sort((a, b) => (a.price < b.price ? -1 : 1))
+                    .sort((a, b) => (a.price > b.price ? -1 : 1))
                     .map((o, i) => (
                       <div key={i}>
                         <Divider style={{ margin: "12.5px" }} />
