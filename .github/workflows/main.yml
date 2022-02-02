@@ -18,6 +18,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: '14.x'
+          
+      - name: Use latest npm version
+        run: npm i -g npm@latest 
 
       - name: Installing my packages
         run: npm ci
