@@ -50,6 +50,7 @@ import {
 } from "./middleware";
 import { MarketProxy, MarketProxyBuilder } from "./serum";
 import { CivicStuff } from "./CivicStuff";
+import _ from "lodash";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -1282,7 +1283,9 @@ export const Dex = () => {
                                 justifyContent: "center",
                               }}
                             >
-                              <div style={{ color: "red" }}>{o.price}</div>
+                              <div style={{ color: "red" }}>
+                                {_.round(o.price, 3)}
+                              </div>
                             </div>
                           </Col>
                         </Row>
@@ -1327,7 +1330,9 @@ export const Dex = () => {
                                 justifyContent: "center",
                               }}
                             >
-                              <div style={{ color: "green" }}>{o.price}</div>
+                              <div style={{ color: "green" }}>
+                                {_.round(o.price, 3)}
+                              </div>
                             </div>
                           </Col>
                         </Row>
