@@ -1053,8 +1053,8 @@ export const Dex = () => {
                 }}
               >
                 <h1 style={{ margin: 0 }}>Get LP Tokens</h1>
-                <p style={{ margin: 0 }}> USDC balance: {usdcBalance? `${Math.round(usdcBalance)} USDC` : "0 USDC"}</p>
-                <p style={{ margin: 0 }}>LP balance: {lpBalance? `${Math.round(lpBalance)} LP` : "0 LP"}</p>
+                <p style={{ margin: 0 }}> USDC balance: {usdcBalance? `${_.round(Number(usdcBalance), 2)} USDC` : "0 USDC"}</p>
+                <p style={{ margin: 0 }}>LP balance: {lpBalance? `${_.round(Number(lpBalance))} LP` : "0 LP"}</p>
               </div>
               <div style={{ padding: "25px", paddingTop: 0 }}>
                 <Row gutter={25}>
