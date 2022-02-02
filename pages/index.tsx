@@ -13,7 +13,7 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 
 export const config = {
   clusterConfig: {
-    RPCEndpoint: "http://127.0.0.1:8899",
+    RPCEndpoint: "https://psytrbhymqlkfrhudd.dev.genesysgo.net:8899/",
   },
   confirmOptions: {
     commitment: "finalized",

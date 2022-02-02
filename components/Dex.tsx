@@ -1,13 +1,11 @@
 import {
   findGatewayToken,
   GatewayToken,
-  issueVanilla,
-  getGatewayTokenKeyForOwner,
   getGatekeeperAccountKey,
+  getGatewayTokenKeyForOwner,
+  issueVanilla,
 } from "@identity.com/solana-gateway-ts";
 import { BN, Provider, utils } from "@project-serum/anchor";
-import { Logger, OpenOrdersPda, ReferralFees } from "./middleware";
-import { MarketProxy, MarketProxyBuilder } from "./serum";
 import { makeSaberProvider, newProgram } from "@saberhq/anchor-contrib";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -21,9 +19,7 @@ import {
 } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import {
-  Account,
   PublicKey,
-  Signer,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   Transaction,
@@ -44,7 +40,13 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { IDL } from "./credix";
 import { CredixPass, CredixProgram } from "./idl.types";
-import { findProgramAddressSync } from "./middleware";
+import {
+  findProgramAddressSync,
+  Logger,
+  OpenOrdersPda,
+  ReferralFees,
+} from "./middleware";
+import { MarketProxy, MarketProxyBuilder } from "./serum";
 
 require("@solana/wallet-adapter-react-ui/styles.css");
 
@@ -213,14 +215,14 @@ class CredixPermissionedMarket {
 }
 
 const marketAddress = new PublicKey(
-  "FcZntrVjDRPv8JnU2mHt8ejvvA1eiHqxM8d8JNEC8q9q"
+  "Dosh9YzNfstN7jjdraf2RJCF25WZojUya79d2xzUJRp9"
 );
 
 const permissionedMarketProgram = new PublicKey(
-  "iPRL869bGrTiJZP6GW2ysPYXV9PMKSMAr6CYhRJx3zq"
+  "B82qssUC4qJT3DXohg8A1k6TuUBNcjnf5d4KX8uJmhDK"
 );
 
-const DEX_PID = new PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
+const DEX_PID = new PublicKey("A3KCE92wXZMtGGJT6XYL2KHva58VXvWkhcqfJ6Q5JEia");
 
 const referral = new PublicKey("EoYuxcwTfyznBF2ebzZ8McqvveyxtMNTGAXGmNKycchB");
 
@@ -243,7 +245,7 @@ export const Dex = () => {
   const wallet = useWallet();
 
   const programId = useMemo(
-    () => new PublicKey("v1yuc1NDc1N1YBWGFdbGjEDBXepcbDeHY1NphTCgkAP"),
+    () => new PublicKey("D58Th9Y4tFssgZaCPQ6diJoiFC6TvcENsiYR6ZbRoosK"),
     []
   );
 
@@ -354,18 +356,23 @@ export const Dex = () => {
         console.log("set pass");
 
         const lpMint = market.lpTokenMintAccount;
-        const lpTokenAddress = await Token.getAssociatedTokenAddress(
-          ASSOCIATED_TOKEN_PROGRAM_ID,
-          TOKEN_PROGRAM_ID,
-          lpMint,
-          anchorWallet.publicKey
-        );
-        const lpAmount =
-          await program.provider.connection.getTokenAccountBalance(
-            lpTokenAddress
+        try {
+          const lpTokenAddress = await Token.getAssociatedTokenAddress(
+            ASSOCIATED_TOKEN_PROGRAM_ID,
+            TOKEN_PROGRAM_ID,
+            lpMint,
+            anchorWallet.publicKey
           );
-        setLPBalance(lpAmount.value.uiAmountString);
-        console.log("set lp balance");
+          console.log("asdfasfd", lpTokenAddress.toString());
+          const lpAmount =
+            await program.provider.connection.getTokenAccountBalance(
+              lpTokenAddress
+            );
+          setLPBalance(lpAmount.value.uiAmountString);
+          console.log("set lp balance");
+        } catch (e) {
+          console.log(e);
+        }
       }
     }
   }, [
@@ -375,6 +382,50 @@ export const Dex = () => {
     getMarketPDA,
     programId,
   ]);
+
+  const initMarket = useCallback(async () => {
+    if (!serumMarket) {
+      console.log("no serum market");
+      return;
+    }
+
+    if (!wallet.publicKey) {
+      return;
+    }
+
+    if (!credixPass || !civicPass) {
+      console.log("pass missing");
+      return;
+    }
+
+    const openOrder = await OpenOrdersPda.openOrdersAddress(
+      marketAddress,
+      wallet.publicKey,
+      DEX_PID,
+      serumMarket.proxyProgramId
+    );
+    console.log("ASdfa");
+    const openOrdersAccountInfo = await connection.connection.getAccountInfo(
+      openOrder
+    );
+    console.log("asdf");
+
+    if (!openOrdersAccountInfo) {
+      const ix = serumMarket.instruction.initOpenOrders(
+        wallet.publicKey,
+        serumMarket.market.address,
+        serumMarket.market.address,
+        serumMarket.market.address
+      );
+      const tx = new Transaction();
+      tx.add(ix);
+      await wallet.sendTransaction(tx, connection.connection);
+    }
+  }, [serumMarket, wallet, connection.connection, credixPass, civicPass]);
+
+  useEffect(() => {
+    initMarket();
+  }, [initMarket]);
 
   const createOrder = async () => {
     console.log("order", buyTabActive, amount, limitPrice);
@@ -619,6 +670,9 @@ export const Dex = () => {
 
     const lpMint = market.lpTokenMintAccount;
 
+    console.log("sdfdsaf", marketPDA[0].toString());
+    const mmm = await program.provider.connection.getAccountInfo(marketAddress);
+    console.log("Sfasfdads", mmm && mmm.owner.toString(), marketAddress.toString());
     const gm = await program.account.globalMarketState.fetch(marketPDA[0]);
     const m = await new MarketProxyBuilder()
       .middleware(
@@ -725,8 +779,9 @@ export const Dex = () => {
       programId
     );
 
+    console.log("sdfas");
     try {
-      const txPromise = program.rpc.createCredixPass(credixPDA[1], {
+      const txPromise = program.rpc.createCredixPass(credixPDA[1], true, true, {
         accounts: {
           owner: anchorWallet.publicKey,
           passHolder: anchorWallet.publicKey,
@@ -738,8 +793,11 @@ export const Dex = () => {
         signers: [],
       });
       message.info("Creating Credix pass");
-      await txPromise;
+      const txSig = await txPromise;
+      await connection.connection.confirmTransaction(txSig);
       message.success("Credix pass created");
+      const pass = await program.account.credixPass.fetch(credixPDA[0]);
+      setCredixPass(pass || undefined);
     } catch (e) {
       alert(e);
     }
