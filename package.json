@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@civic/solana-gateway-react": "^0.4.11",
-    "@identity.com/solana-gateway-ts": "^0.4.3",
+    "@civic/solana-gateway-react": "0.4.10",
+    "@identity.com/solana-gateway-ts": "0.4.4",
     "@project-serum/anchor": "^0.20.1",
     "@project-serum/serum": "^0.13.61",
     "@saberhq/anchor-contrib": "^1.12.36",
