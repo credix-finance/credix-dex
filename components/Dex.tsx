@@ -1025,6 +1025,7 @@ export const Dex = () => {
                         type="primary"
                         block
                         onClick={issueCredixPass}
+                        //@ts-ignore
                         disabled={credixPass}
                       >
                         Get Credix pass
