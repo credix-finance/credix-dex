@@ -1053,8 +1053,22 @@ export const Dex = () => {
                 }}
               >
                 <h1 style={{ margin: 0 }}>Get LP Tokens</h1>
-                <p style={{ margin: 0 }}> USDC balance: {usdcBalance? `${_.round(Number(usdcBalance), 2)} USDC` : "0 USDC"}</p>
-                <p style={{ margin: 0 }}>LP balance: {lpBalance? `${_.round(Number(lpBalance))} LP` : "0 LP"}</p>
+                <Row>
+                  <Col span={5}>
+                    <b>USDC balance:</b>
+                  </Col>
+                  <Col span={5}>
+                    {`${usdcBalance ? _.round(Number(usdcBalance), 2) : ""} USDC`}
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={5}>
+                    <b>LP balance:</b>
+                  </Col>
+                  <Col span={5}>
+                    {`${lpBalance ? _.round(Number(lpBalance), 2) : ""} LP`}
+                  </Col>
+                </Row>
               </div>
               <div style={{ padding: "25px", paddingTop: 0 }}>
                 <Row gutter={25}>
@@ -1063,8 +1077,7 @@ export const Dex = () => {
                       size="large"
                       addonAfter="USDC"
                       style={{ width: "100%" }}
-                      onChange={(v) => setDepositAmount(Number(v))
-                      }
+                      onChange={(v) => setDepositAmount(Number(v))}
                     />
                   </Col>
                   <Col span={6}>
