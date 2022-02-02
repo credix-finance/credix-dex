@@ -248,7 +248,7 @@ export const Dex = () => {
     () => new PublicKey("D58Th9Y4tFssgZaCPQ6diJoiFC6TvcENsiYR6ZbRoosK"),
     []
   );
-  console.log(connection.connection);
+  
   const getProgram = useCallback(() => {
     if (anchorWallet) {
       const provider = new Provider(
