@@ -553,10 +553,12 @@ export const Dex = () => {
     const tx = new Transaction();
     tx.add(ix);
 
+    console.log("sending")
     const txSigPromise = wallet.sendTransaction(tx, connection.connection);
+    console.log("send order");
     message.info("Placing order");
     const txSig = await txSigPromise;
-    await connection.connection.confirmTransaction(txSig);
+    await connection.connection.confirmTransaction(txSig, "confirmed");
     message.success("Order placed");
     console.log("TADAA");
 
@@ -564,8 +566,9 @@ export const Dex = () => {
     tx2.add(ix2);
 
     const txSig2 = await wallet.sendTransaction(tx2, connection.connection);
+    console.log("send settle funds");
     message.info("settling funds");
-    await connection.connection.confirmTransaction(txSig2);
+    await connection.connection.confirmTransaction(txSig2, "confirmed");
     message.success("Funds settled");
 
     console.log("TADAA");
@@ -831,7 +834,7 @@ export const Dex = () => {
       });
       message.info("Creating Credix pass");
       const txSig = await txPromise;
-      await connection.connection.confirmTransaction(txSig);
+      await connection.connection.confirmTransaction(txSig, "confirmed");
       message.success("Credix pass created");
       const pass = await program.account.credixPass.fetch(credixPDA[0]);
       setCredixPass(pass || undefined);
@@ -1154,18 +1157,18 @@ export const Dex = () => {
                           <InputNumber
                             style={{ width: "100%" }}
                             size="large"
-                            addonBefore="Limit price"
-                            addonAfter="USDC"
-                            onChange={(val) => setLimitPrice(Number(val))}
+                            addonBefore="Amount"
+                            addonAfter="LP"
+                            onChange={(val) => setAmount(Number(val))}
                           ></InputNumber>
                         </div>
                         <div style={{ marginTop: "25px" }}>
                           <InputNumber
                             style={{ width: "100%" }}
                             size="large"
-                            addonBefore="Amount"
-                            addonAfter="LP"
-                            onChange={(val) => setAmount(Number(val))}
+                            addonBefore="Limit price"
+                            addonAfter="USDC"
+                            onChange={(val) => setLimitPrice(Number(val))}
                           ></InputNumber>
                         </div>
                       </div>
