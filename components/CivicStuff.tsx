@@ -21,7 +21,7 @@ export const CivicStuff = (props: Props) => {
       {wallet?.publicKey && (
         <>
           {props.gatekeeperNetwork && (
-            <div>
+            <div style={{ lineHeight: "4px" }}>
               <Badge
                 clusterName="devnet"
                 gatekeeperNetwork={props.gatekeeperNetwork}
