@@ -218,11 +218,11 @@ class CredixPermissionedMarket {
 }
 
 const marketAddress = new PublicKey(
-  "B5PiAeo5L2DVkYJPgoTVaLAC8HrVP8mZTfQsmWei4W2T"
+  "3gudbK5W1gxJc4ArDwKNYegisf4J3aD6p1yytQeb8yhm"
 );
 
 const permissionedMarketProgram = new PublicKey(
-  "GA9WMuDAR2yzCg7mrBxd1QZAPVem23j6XxMnBVYYqeoX"
+  "4HaBtighJFPCmLCzkaR8dhwQhSv7rynk3d2dbPPKtZgA"
 );
 
 const DEX_PID = new PublicKey("A3KCE92wXZMtGGJT6XYL2KHva58VXvWkhcqfJ6Q5JEia");
@@ -273,10 +273,10 @@ export const Dex = () => {
   const wallet = useWallet();
 
   const programId = useMemo(
-    () => new PublicKey("FboisrZaMdtHXY5rQmVbuZvnuYnooyfd6cxcmMyMNiQr"),
+    () => new PublicKey("23LA3K8AW5JM9QyfF4xa27Q5qgkcLGi8tJgCi4dp4Xjc"),
     []
   );
-  
+
   const getProgram = useCallback(() => {
     if (anchorWallet) {
       const provider = new Provider(
@@ -347,14 +347,14 @@ export const Dex = () => {
             anchorWallet.publicKey
           );
           const tokenAmount =
-          await program.provider.connection.getTokenAccountBalance(
-            baseTokenAddress
-          );
+            await program.provider.connection.getTokenAccountBalance(
+              baseTokenAddress
+            );
           setUSDCBalance(tokenAmount.value.uiAmountString);
         } catch (e) {
           console.log(e);
         }
-       
+
         console.log("set usdc");
 
         const gatekeeperNetwork = market.gatekeeperNetwork;
