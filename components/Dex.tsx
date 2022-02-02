@@ -989,6 +989,7 @@ export const Dex = () => {
                         type="primary"
                         block
                         onClick={issueCivicPass}
+                        disabled={true}
                       >
                         Get Civic pass
                       </Button>
@@ -1024,6 +1025,7 @@ export const Dex = () => {
                         type="primary"
                         block
                         onClick={issueCredixPass}
+                        disabled={credixPass}
                       >
                         Get Credix pass
                       </Button>
@@ -1054,19 +1056,19 @@ export const Dex = () => {
               >
                 <h1 style={{ margin: 0 }}>Get LP Tokens</h1>
                 <Row>
-                  <Col span={5}>
+                  <Col span={6}>
                     <b>USDC balance:</b>
                   </Col>
                   <Col span={5}>
-                    {`${usdcBalance ? _.round(Number(usdcBalance), 2) : ""} USDC`}
+                    {`${usdcBalance ? _.round(Number(usdcBalance), 2) : "0"} USDC`}
                   </Col>
                 </Row>
                 <Row>
-                  <Col span={5}>
+                  <Col span={6}>
                     <b>LP balance:</b>
                   </Col>
                   <Col span={5}>
-                    {`${lpBalance ? _.round(Number(lpBalance), 2) : ""} LP`}
+                    {`${lpBalance ? _.round(Number(lpBalance), 2) : "0"} LP`}
                   </Col>
                 </Row>
               </div>
