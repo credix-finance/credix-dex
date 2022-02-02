@@ -64,30 +64,6 @@ interface Order {
   type: OrderType;
 }
 
-// JUST FOR DEVELOPPING
-const testOrders = [
-  {
-    size: 3000,
-    price: 34234,
-    type: OrderType.SELL,
-  },
-  {
-    size: 12232,
-    price: 4343434,
-    type: OrderType.BUY,
-  },
-  {
-    size: 2603,
-    price: 34233,
-    type: OrderType.BUY,
-  },
-  {
-    size: 232,
-    price: 50334,
-    type: OrderType.SELL,
-  },
-];
-
 const GATEWAY_PROGRAM: PublicKey = new PublicKey(
   "gatem74V238djXdzWnJf94Wo1DcnuGkfijbf3AuBhfs"
 );
@@ -219,14 +195,15 @@ class CredixPermissionedMarket {
 }
 
 const marketAddress = new PublicKey(
-  "3gudbK5W1gxJc4ArDwKNYegisf4J3aD6p1yytQeb8yhm"
+  // "3gudbK5W1gxJc4ArDwKNYegisf4J3aD6p1yytQeb8yhm"
+  "FcZntrVjDRPv8JnU2mHt8ejvvA1eiHqxM8d8JNEC8q9q"
 );
 
 const permissionedMarketProgram = new PublicKey(
-  "4HaBtighJFPCmLCzkaR8dhwQhSv7rynk3d2dbPPKtZgA"
+  "iPRL869bGrTiJZP6GW2ysPYXV9PMKSMAr6CYhRJx3zq"
 );
 
-const DEX_PID = new PublicKey("A3KCE92wXZMtGGJT6XYL2KHva58VXvWkhcqfJ6Q5JEia");
+const DEX_PID = new PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
 
 const referral = new PublicKey("EoYuxcwTfyznBF2ebzZ8McqvveyxtMNTGAXGmNKycchB");
 
@@ -274,7 +251,7 @@ export const Dex = () => {
   const wallet = useWallet();
 
   const programId = useMemo(
-    () => new PublicKey("23LA3K8AW5JM9QyfF4xa27Q5qgkcLGi8tJgCi4dp4Xjc"),
+    () => new PublicKey("v1yuc1NDc1N1YBWGFdbGjEDBXepcbDeHY1NphTCgkAP"),
     []
   );
 
@@ -432,6 +409,10 @@ export const Dex = () => {
       return;
     }
 
+    if (!anchorWallet) {
+      return;
+    }
+
     const openOrder = await OpenOrdersPda.openOrdersAddress(
       marketAddress,
       wallet.publicKey,
@@ -444,17 +425,32 @@ export const Dex = () => {
 
     if (!openOrdersAccountInfo) {
       console.log("creating open orders account info", openOrdersAccountInfo);
+      message.info("Creating open orders PDA");
       const ix = serumMarket.instruction.initOpenOrders(
         wallet.publicKey,
         serumMarket.market.address,
         serumMarket.market.address,
         serumMarket.market.address
       );
-      const tx = new Transaction();
+      let tx = new Transaction();
       tx.add(ix);
-      await wallet.sendTransaction(tx, connection.connection);
+      let { blockhash } = await connection.connection.getRecentBlockhash();
+      tx.recentBlockhash = blockhash;
+      tx.feePayer = wallet.publicKey;
+      tx = await anchorWallet.signTransaction(tx);
+      console.log("signatures, ", tx.signatures);
+      const sig = await connection.connection.sendRawTransaction(tx.serialize());
+      await connection.connection.confirmTransaction(sig);
+      message.success("Open orders pda created");
     }
-  }, [serumMarket, wallet, connection.connection, credixPass, civicPass]);
+  }, [
+    serumMarket,
+    wallet,
+    connection.connection,
+    credixPass,
+    civicPass,
+    anchorWallet,
+  ]);
 
   useEffect(() => {
     initMarket();
@@ -550,28 +546,42 @@ export const Dex = () => {
       referralUsdc
     );
 
-    const tx = new Transaction();
+    if (!wallet.publicKey) {
+      return;
+    }
+
+    let tx = new Transaction();
     tx.add(ix);
+    let blockhash = (await connection.connection.getRecentBlockhash())
+      .blockhash;
+    tx.recentBlockhash = blockhash;
+    tx.feePayer = wallet.publicKey;
+    tx = await anchorWallet.signTransaction(tx);
 
     console.log("sending");
-    const txSigPromise = wallet.sendTransaction(tx, connection.connection);
+    const txSigPromise = connection.connection.sendRawTransaction(
+      tx.serialize()
+    );
+    // const txSigPromise = wallet.sendTransaction(tx, connection.connection);
     console.log("send order");
     message.info("Placing order");
-    const txSig = await txSigPromise;
-    await connection.connection.confirmTransaction(txSig, "confirmed");
+    let txSig = await txSigPromise;
+    await connection.connection.confirmTransaction(txSig);
     message.success("Order placed");
     console.log("TADAA");
 
-    const tx2 = new Transaction();
+    let tx2 = new Transaction();
     tx2.add(ix2);
+    blockhash = (await connection.connection.getRecentBlockhash()).blockhash;
+    tx2.recentBlockhash = blockhash;
+    tx2.feePayer = wallet.publicKey;
 
-    const txSig2 = await wallet.sendTransaction(tx2, connection.connection);
-    console.log("send settle funds");
-    message.info("settling funds");
-    await connection.connection.confirmTransaction(txSig2, "confirmed");
+    tx2 = await anchorWallet.signTransaction(tx2);
+
+    message.info("Settling funds");
+    txSig = await connection.connection.sendRawTransaction(tx2.serialize());
+    await connection.connection.confirmTransaction(txSig);
     message.success("Funds settled");
-
-    console.log("TADAA");
   };
 
   useEffect(() => {
@@ -834,8 +844,9 @@ export const Dex = () => {
       });
       message.info("Creating Credix pass");
       const txSig = await txPromise;
-      await connection.connection.confirmTransaction(txSig, "confirmed");
+      await connection.connection.confirmTransaction(txSig);
       message.success("Credix pass created");
+      console.log("newly made credix pass", credixPDA[0].toString());
       const pass = await program.account.credixPass.fetch(credixPDA[0]);
       setCredixPass(pass || undefined);
     } catch (e) {
@@ -947,7 +958,7 @@ export const Dex = () => {
               gap: "25px",
             }}
           >
-            <IdentityButton gatekeeper={gatekeeperNetwork || null} />
+            {/* <IdentityButton gatekeeper={gatekeeperNetwork || null} /> */}
             <Button
               size="large"
               type="primary"
