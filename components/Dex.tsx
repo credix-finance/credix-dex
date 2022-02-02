@@ -196,14 +196,14 @@ class CredixPermissionedMarket {
 
 const marketAddress = new PublicKey(
   // "3gudbK5W1gxJc4ArDwKNYegisf4J3aD6p1yytQeb8yhm"
-  "FcZntrVjDRPv8JnU2mHt8ejvvA1eiHqxM8d8JNEC8q9q"
+  "GpgNE1tn2d2wpMxGuYZdGYdEAqZwHi3U9yWjAe3hFdVV"
 );
 
 const permissionedMarketProgram = new PublicKey(
-  "iPRL869bGrTiJZP6GW2ysPYXV9PMKSMAr6CYhRJx3zq"
+  "FYXohVSAyeUykuBDGYpSohgZb4y6DFmNJBjcQrML8ix6"
 );
 
-const DEX_PID = new PublicKey("9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin");
+const DEX_PID = new PublicKey("A3KCE92wXZMtGGJT6XYL2KHva58VXvWkhcqfJ6Q5JEia");
 
 const referral = new PublicKey("EoYuxcwTfyznBF2ebzZ8McqvveyxtMNTGAXGmNKycchB");
 
@@ -251,7 +251,7 @@ export const Dex = () => {
   const wallet = useWallet();
 
   const programId = useMemo(
-    () => new PublicKey("v1yuc1NDc1N1YBWGFdbGjEDBXepcbDeHY1NphTCgkAP"),
+    () => new PublicKey("8HE5gUxtvXEpHFjaJW3SNcZe2vXEusKWcWJWoF8aJQ8"),
     []
   );
 
